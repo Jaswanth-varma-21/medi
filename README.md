@@ -121,3 +121,64 @@ Upload image -> image check -> image model -> finding detection -> report draft 
   (TorchXRayVision; weights download on first run). Not validated by the MedTruth authors: test it on labelled,
   de-identified images first. Bone, spine and dental need their own models via `register_model` in `vision.py`, and
   the knowledge base currently covers chest findings only.
+
+
+## Run with Docker
+
+Docker Compose runs the FastAPI backend and the built React frontend in containers.
+
+### Requirements
+
+- Docker Engine with the Docker Compose plugin, or Docker Desktop with WSL integration enabled.
+- Optional: Ollama running on the host if you want the local LLM explanation path. The Compose default points to `http://host.docker.internal:11434/v1`.
+
+### Start
+
+From the repository root:
+
+```bash
+docker compose up --build -d
+```
+
+Open the application at [http://localhost:8080](http://localhost:8080). The API is proxied by the frontend container; the backend is not exposed directly to the host.
+
+Check status and logs:
+
+```bash
+docker compose ps
+docker compose logs -f backend
+docker compose logs -f frontend
+```
+
+Stop the containers:
+
+```bash
+docker compose down
+```
+
+### Configure the LLM
+
+Compose reads variable values from the shell or a root-level `.env` file. For example, create a local root `.env` (it is ignored by Git) with:
+
+```dotenv
+LLM_BASE_URL=http://host.docker.internal:11434/v1
+LLM_MODEL=llama3.2
+LLM_API_KEY=ollama
+LLM_TIMEOUT=180
+```
+
+Make sure Ollama is running on the host and the configured model has been pulled. If the backend container cannot reach Ollama, report explanation may use the built-in template fallback.
+
+### Optional chest model
+
+The default Docker image installs the base backend dependencies only. To enable the optional TorchXRayVision chest model, it needs additional ML dependencies, model-weight download, and evaluation. This is not included in the default Compose build to keep the image smaller and avoid implying clinical validation. Bone, spine, and dental pathways still require their own task-appropriate models.
+
+### Docker files
+
+- `Dockerfile` — FastAPI backend, including Tesseract and Poppler for OCR/PDF support.
+- `frontend/Dockerfile` — builds the React frontend and serves it with Nginx.
+- `frontend/nginx.conf` — forwards `/api/` requests to the backend container.
+- `docker-compose.yml` — runs both services.
+- `.dockerignore` — excludes local environments, secrets, and patient data from build contexts.
+
+This setup is for a research prototype, not a clinically validated diagnostic system. Do not use real patient data without appropriate permissions and safeguards.

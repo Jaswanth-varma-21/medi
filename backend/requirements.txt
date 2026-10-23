@@ -1,5 +1,6 @@
 fastapi>=0.115
 uvicorn[standard]>=0.30
+numpy>=1.26
 pypdf>=5.0
 pdf2image>=1.17
 pytesseract>=0.3.13

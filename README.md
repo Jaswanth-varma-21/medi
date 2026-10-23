@@ -182,3 +182,19 @@ The default Docker image installs the base backend dependencies only. To enable 
 - `.dockerignore` — excludes local environments, secrets, and patient data from build contexts.
 
 This setup is for a research prototype, not a clinically validated diagnostic system. Do not use real patient data without appropriate permissions and safeguards.
+
+
+## Deploy to Render
+
+This repository includes a Render Blueprint at `render.yaml` that defines two Docker web services: the FastAPI backend and the React/Nginx frontend. The frontend proxies `/api/` requests to the backend over Render's private service network.
+
+1. Push the latest repository changes to GitHub.
+2. Sign in to [Render](https://dashboard.render.com/).
+3. Choose **New → Blueprint** and connect `Jaswanth-varma-21/medi`.
+4. Select the branch `main`, review the two services, and apply the Blueprint.
+5. Wait for both Docker builds and deployments to finish. Open the public URL for the `medtruth-web` service.
+6. Check the backend service health at its service URL plus `/api/health`.
+
+The app works without a configured hosted LLM by using its built-in template explanation. Ollama running on your Debian machine is not automatically reachable from Render. If you want hosted LLM explanations, configure `LLM_BASE_URL`, `LLM_MODEL`, and `LLM_API_KEY` in the backend service's Render environment settings; keep secrets in Render's environment settings, not in Git.
+
+The optional TorchXRayVision chest model is not included in the default Docker image. Bone, spine, and dental models still require their own integration and validation. Deployment does not imply clinical validation.

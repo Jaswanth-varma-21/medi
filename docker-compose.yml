@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
+      PORT: "8000"
       LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:11434/v1}
       LLM_MODEL: ${LLM_MODEL:-llama3.2}
       LLM_API_KEY: ${LLM_API_KEY:-ollama}
@@ -18,6 +19,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    environment:
+      BACKEND_HOSTPORT: backend:8000
     depends_on:
       - backend
     ports:
